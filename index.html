@@ -6,7 +6,14 @@
     <title>AEO Analyzer MVP</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Poppins:wght@300;500&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Poppins', sans-serif; max-width: 900px; margin: 40px auto; padding: 20px; background: #f0f4f8; color: #333; line-height: 1.6; }
+        body { font-family: 'Poppins', sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; background: #f0f4f8; color: #333; line-height: 1.6; }
+        header { background: #007bff; color: white; padding: 15px 0; text-align: center; }
+        header nav { display: flex; justify-content: center; gap: 20px; }
+        header a { color: white; text-decoration: none; font-family: 'Montserrat', sans-serif; }
+        .hero { text-align: center; padding: 40px 20px; background: #e9ecef; border-radius: 8px; margin-bottom: 30px; }
+        .hero h1 { font-size: 2.5em; margin-bottom: 10px; }
+        .hero p { font-size: 1.2em; }
+        .hero button { font-size: 1.2em; padding: 15px 30px; }
         h1, h2, h3 { font-family: 'Montserrat', sans-serif; color: #007bff; }
         .steps { display: flex; justify-content: space-between; margin-bottom: 30px; }
         .step { flex: 1; text-align: center; padding: 10px; background: #e9ecef; border-radius: 5px; margin: 0 10px; font-family: 'Montserrat', sans-serif; }
@@ -28,11 +35,34 @@
         .average-tick { position: absolute; top: 0; bottom: 0; width: 2px; background: #333; left: 52%; }
         .average-label { position: absolute; top: 25px; left: 52%; transform: translateX(-50%); font-size: 12px; color: #333; }
         .urgent { background: #ffe5e5; padding: 15px; border-radius: 5px; margin: 20px 0; color: #dc3545; font-family: 'Poppins', sans-serif; }
+        .faq { margin-top: 40px; }
+        .faq details { margin-bottom: 10px; border-bottom: 1px solid #ddd; }
+        .faq summary { cursor: pointer; font-weight: bold; font-family: 'Montserrat', sans-serif; }
+        footer { text-align: center; padding: 20px 0; background: #007bff; color: white; margin-top: 40px; }
+        footer a { color: white; text-decoration: none; margin: 0 10px; }
+        .cta { text-align: center; margin: 20px 0; }
+        .cta button { background: #28a745; }
+        .cta button:hover { background: #218838; }
     </style>
 </head>
 <body>
+    <header>
+        <nav>
+            <a href="#">Home</a>
+            <a href="#">About AEO</a>
+            <a href="#">Pricing</a>
+            <a href="#">Contact</a>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <h1>Unlock Your AI Search Potential</h1>
+        <p>Get your AEO Score in minutes and dominate rankings with actionable insights.</p>
+        <button onclick="scrollToAnalyzer()">Start Free Analysis</button>
+    </section>
+
     <div class="credits">Credits: <span id="credits">0</span>*</div>
-    <h1>AEO Analyzer</h1>
+    <h1 id="analyzer">AEO Analyzer</h1>
     
     <div class="steps">
         <div class="step" id="step1">1 Verify Website</div>
@@ -92,6 +122,10 @@
         </ul>
         <p>Credits Remaining: <span id="remainingCredits">9</span></p>
         <button onclick="analyzeAnother()">Analyze Another Website</button>
+        <div class="cta">
+            <button onclick="shareResults()">Share Your Results</button>
+            <button onclick="upgradePro()">Upgrade to Pro for Unlimited</button>
+        </div>
     </div>
 
     <div id="noCreditsSection" class="section hidden">
@@ -100,11 +134,38 @@
         <button onclick="refillCredits()">Refill Credits $9.99 (Get 10 more)</button>
     </div>
 
+    <section class="faq">
+        <h2>FAQ & Explainer</h2>
+        <details>
+            <summary>What is AEO?</summary>
+            <p>AEO stands for AI Engine Optimization, focusing on optimizing for AI-driven search like Grok or ChatGPT integrations.</p>
+        </details>
+        <details>
+            <summary>How does the scoring work?</summary>
+            <p>We analyze content structure, technical SEO, and AI signals to give a score out of 100.</p>
+        </details>
+        <details>
+            <summary>Why do I need credits?</summary>
+            <p>Credits ensure fair usage; buy more for unlimited analyses.</p>
+        </details>
+    </section>
+
+    <footer>
+        <p>&copy; 2025 AEO Analyzer. All rights reserved.</p>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+        <a href="#">Contact Us</a>
+    </footer>
+
     <script>
         let credits = 0; // Start with 0 for MVP
         let currentUrl = '';
         document.getElementById('credits').textContent = credits;
         document.getElementById('step1').classList.add('active');
+
+        function scrollToAnalyzer() {
+            document.getElementById('analyzer').scrollIntoView({ behavior: 'smooth' });
+        }
 
         async function checkCompatibility() {
             currentUrl = document.getElementById('urlInput').value.trim();
@@ -137,7 +198,7 @@
                         <button onclick="tryDifferent()">Try Different Website</button>
                     `;
                 }
-                document.getElementById('verifySection').classList.add('hidden'); // Hide verify on progress
+                document.getElementById('verifySection').classList.add('hidden');
                 document.getElementById('planSection').classList.remove('hidden');
                 document.getElementById('step2').classList.add('active');
             } catch (error) {
@@ -160,12 +221,10 @@
                 return;
             }
 
-            // Simulate payment/credit use for MVP
             credits--;
             document.getElementById('credits').textContent = credits;
             document.getElementById('remainingCredits').textContent = credits;
 
-            // Fetch HTML for analysis
             const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(currentUrl);
             try {
                 const response = await fetch(proxyUrl);
@@ -173,8 +232,7 @@
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
 
-                // Simulate AEO analysis (expand with more checks)
-                const score = Math.floor(Math.random() * 100) + 1; // Random for MVP
+                const score = Math.floor(Math.random() * 100) + 1;
                 document.getElementById('analyzedUrl').textContent = currentUrl;
                 document.getElementById('overallScore').textContent = score;
                 document.getElementById('yourScore').textContent = score;
@@ -194,7 +252,7 @@
 
                 document.getElementById('urgentMessage').querySelector('p').textContent = `Your website scored ${score}/100, which means you have CRITICAL OPPORTUNITY WINDOWS that could skyrocket your AI search visibility by 200-400%!`;
 
-                document.getElementById('planSection').classList.add('hidden'); // Hide plan on progress
+                document.getElementById('planSection').classList.add('hidden');
                 document.getElementById('resultsSection').classList.remove('hidden');
                 document.getElementById('step3').classList.add('active');
             } catch (error) {
@@ -206,7 +264,7 @@
             document.getElementById('urlInput').value = '';
             document.getElementById('planSection').classList.add('hidden');
             document.getElementById('verifyResult').innerHTML = '';
-            document.getElementById('verifySection').classList.remove('hidden'); // Show verify again
+            document.getElementById('verifySection').classList.remove('hidden');
         }
 
         function analyzeAnother() {
@@ -217,11 +275,18 @@
         }
 
         function refillCredits() {
-            // Simulate refill for MVP
             credits += 10;
             document.getElementById('credits').textContent = credits;
             document.getElementById('noCreditsSection').classList.add('hidden');
             alert('Credits refilled! (Simulated for MVP)');
+        }
+
+        function shareResults() {
+            alert('Share functionality coming soon! (MVP simulation)');
+        }
+
+        function upgradePro() {
+            alert('Upgrade to Pro coming soon! (MVP simulation)');
         }
     </script>
 </body>
