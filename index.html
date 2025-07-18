@@ -70,7 +70,7 @@
     <h1 id="analyzer">AEO Analyzer</h1>
     
     <div class="steps">
-        <div class="step" id="step1">1 Verify Website</div>
+        <div class="step active" id="step1">1 Verify Website</div>
         <div class="step" id="step2">2 Choose Plan</div>
         <div class="step" id="step3">3 Get Results</div>
     </div>
@@ -178,7 +178,7 @@
             if (!currentUrl.startsWith('http://') && !currentUrl.startsWith('https://')) currentUrl = 'https://' + currentUrl;
 
             document.getElementById('loading').classList.remove('hidden');
-            const proxyUrl = 'https://cors.bridged.cc/' + currentUrl;
+            const proxyUrl = 'https://cors-anywhere.com/' + currentUrl;
 
             try {
                 const response = await fetch(proxyUrl);
@@ -240,7 +240,7 @@
             document.getElementById('credits').textContent = credits;
             document.getElementById('remainingCredits').textContent = credits;
 
-            const proxyUrl = 'https://cors.bridged.cc/' + currentUrl;
+            const proxyUrl = 'https://cors-anywhere.com/' + currentUrl;
             try {
                 const response = await fetch(proxyUrl);
                 const html = await response.text();
