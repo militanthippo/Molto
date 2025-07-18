@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEO Analyzer MVP</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 20px; background: #f0f4f8; color: #333; }
+        h1 { text-align: center; color: #007bff; }
+        input[type="text"] { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        button { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        button:hover { background: #0056b3; }
+        #results { margin-top: 30px; }
+        .section { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: relative; transition: transform 0.3s; }
+        .section:hover { transform: translateY(-5px); }
+        .sticky { position: sticky; top: 0; z-index: 10; background: #fff; border-bottom: 2px solid #007bff; }
+        .good { color: #28a745; font-weight: bold; }
+        .bad { color: #dc3545; font-weight: bold; }
+        .warn { color: #ffc107; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>AEO Analyzer MVP</h1>
+    <p style="text-align: center;">Enter your domain or URL for instant SEO insights.</p>
+    <input type="text" id="urlInput" placeholder="e.g., example.com or https://example.com">
+    <button onclick="analyzeSEO()">Analyze</button>
+    <div id="results"></div>
+
+    <script>
+        async function analyzeSEO() {
+            let url = document.getElementById('urlInput').value.trim();
+            if (!url) return showError('Please enter a URL.');
+
+            if (!url.startsWith('http://') && !url.startsWith('https://')) url = 'https://' + url;
+
+            const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+
+            try {
+                const response = await fetch(proxyUrl);
+                if (!response.ok) throw new Error('Fetch failed: ' + response.status);
+
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+
+                // Create stacked sections
+                function addSection(title, content, status) {
+                    const div = document.createElement('div');
+                    div.classList.add('section');
+                    div.innerHTML = `<h3>${title}</h3><p class="${status}">${content}</p>`;
+                    resultsDiv.appendChild(div);
+                }
+
+                // Make first section sticky for overview
+                const overview = 'Analysis Complete for ' + url;
+                addSection('Overview', overview, 'good');
+                resultsDiv.firstChild.classList.add('sticky');
+
+                // Checks as before, now in sections
+                const title = doc.querySelector('title');
+                let titleMsg = title ? title.textContent.length >= 50 && title.textContent.length <= 60 ? 'Good (optimal length)' : 'Warn - Adjust length' : 'Missing!';
+                addSection('Page Title', titleMsg, titleMsg.includes('Good') ? 'good' : titleMsg.includes('Warn') ? 'warn' : 'bad');
+
+                const metaDesc = doc.querySelector('meta[name="description"]');
+                let descMsg = metaDesc ? metaDesc.content.length >= 150 && metaDesc.content.length <= 160 ? 'Good (optimal length)' : 'Warn - Adjust length' : 'Missing!';
+                addSection('Meta Description', descMsg, descMsg.includes('Good') ? 'good' : descMsg.includes('Warn') ? 'warn' : 'bad');
+
+                const h1s = doc.querySelectorAll('h1').length;
+                let h1Msg = h1s === 1 ? 'Good (exactly one)' : h1s > 1 ? 'Bad - Too many' : 'Missing!';
+                addSection('H1 Tags', h1Msg, h1Msg.includes('Good') ? 'good' : h1Msg.includes('Bad') ? 'bad' : 'warn');
+
+                const imgs = doc.querySelectorAll('img');
+                let missingAlts = Array.from(imgs).filter(img => !img.alt).length;
+                let imgMsg = missingAlts === 0 && imgs.length > 0 ? 'Good (all have alts)' : missingAlts > 0 ? `Bad - ${missingAlts} missing` : 'None found (OK)';
+                addSection('Image Alts', imgMsg, imgMsg.includes('Good') ? 'good' : imgMsg.includes('Bad') ? 'bad' : 'warn');
+
+                const fullHTML = html.length;
+                const textContent = doc.body.textContent.replace(/\s+/g, ' ').trim().length;
+                const ratio = (textContent / fullHTML) * 100;
+                let ratioMsg = ratio > 10 ? 'Good (>10%)' : 'Warn - Too low';
+                addSection('Text/HTML Ratio', `${ratioMsg} (${ratio.toFixed(2)}%)`, ratioMsg.includes('Good') ? 'good' : 'warn');
+
+            } catch (error) {
+                showError('Error: ' + error.message + '. Try another URL.');
+            }
+
+            function showError(msg) {
+                resultsDiv.innerHTML = `<p class="error">${msg}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
