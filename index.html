@@ -17,7 +17,7 @@
         h1, h2, h3 { font-family: 'Montserrat', sans-serif; color: #007bff; }
         .steps { display: flex; justify-content: space-between; margin-bottom: 30px; }
         .step { flex: 1; text-align: center; padding: 10px; background: #e9ecef; border-radius: 5px; margin: 0 10px; font-family: 'Montserrat', sans-serif; }
-        .step.active { background: #007bff !important; color: white; }
+        .step.active { background: #007bff !important; color: white !important; }
         .section { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: relative; transition: transform 0.3s; }
         .section:hover { transform: translateY(-5px); }
         .sticky { position: sticky; top: 0; z-index: 10; background: #fff; border-bottom: 2px solid #007bff; }
@@ -178,7 +178,7 @@
             if (!currentUrl.startsWith('http://') && !currentUrl.startsWith('https://')) currentUrl = 'https://' + currentUrl;
 
             document.getElementById('loading').classList.remove('hidden');
-            const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(currentUrl);
+            const proxyUrl = 'https://thingproxy.freeboard.io/fetch/' + currentUrl;
 
             try {
                 const response = await fetch(proxyUrl);
@@ -207,7 +207,18 @@
                 document.getElementById('step2').classList.add('active');
             } catch (error) {
                 document.getElementById('loading').classList.add('hidden');
-                showError('verifyResult', 'Error checking: ' + error.message);
+                showError('verifyResult', 'Error checking accessibility – assuming blocked: ' + error.message);
+                // Fallback to manual option on error
+                document.getElementById('planSection').innerHTML = `
+                    <p>Unable to automatically check – choose manual analysis or try later:</p>
+                    <h3>Premium Manual Analysis $49</h3>
+                    <p>Expert analysis with detailed PDF report delivered via email within 15-20 minutes</p>
+                    <button onclick="proceedToAnalysis(false)">Get Expert Analysis</button>
+                    <button onclick="tryDifferent()">Try Different Website</button>
+                `;
+                document.getElementById('verifySection').classList.add('hidden');
+                document.getElementById('planSection').classList.remove('hidden');
+                document.getElementById('step2').classList.add('active');
             }
         }
 
@@ -229,7 +240,7 @@
             document.getElementById('credits').textContent = credits;
             document.getElementById('remainingCredits').textContent = credits;
 
-            const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(currentUrl);
+            const proxyUrl = 'https://thingproxy.freeboard.io/fetch/' + currentUrl;
             try {
                 const response = await fetch(proxyUrl);
                 const html = await response.text();
@@ -247,6 +258,7 @@
 
                 // Dynamic summary based on score
                 const summaryDiv = document.getElementById('summaryMessage');
+                summaryDiv.className = 'summary'; // Reset classes
                 const summaryTitle = document.getElementById('summaryTitle');
                 const summaryText = document.getElementById('summaryText');
                 if (score >= 80) {
