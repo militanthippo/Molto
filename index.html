@@ -3,160 +3,216 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AEO Analyzer - Optimize for AI Search</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Pirata+One&display=swap" rel="stylesheet">
-    <!-- CSS enqueued separately via child theme -->
+    <title>AEO Analyzer MVP</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 20px; background: #f0f4f8; color: #333; line-height: 1.6; }
+        h1, h2, h3 { color: #007bff; }
+        .steps { display: flex; justify-content: space-between; margin-bottom: 30px; }
+        .step { flex: 1; text-align: center; padding: 10px; background: #e9ecef; border-radius: 5px; margin: 0 10px; }
+        .step.active { background: #007bff; color: white; }
+        .section { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: relative; transition: transform 0.3s; }
+        .section:hover { transform: translateY(-5px); }
+        .sticky { position: sticky; top: 0; z-index: 10; background: #fff; border-bottom: 2px solid #007bff; }
+        input[type="text"] { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        button { padding: 12px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin: 10px 0; }
+        button:hover { background: #0056b3; }
+        .success { color: #28a745; font-weight: bold; }
+        .error { color: #dc3545; font-weight: bold; }
+        .warn { color: #ffc107; font-weight: bold; }
+        .hidden { display: none; }
+        .credits { position: absolute; top: 20px; right: 20px; font-weight: bold; }
+        .progress { text-align: center; margin: 10px 0; }
+        .score-bar { background: #ddd; height: 20px; border-radius: 5px; overflow: hidden; margin: 10px 0; }
+        .score-fill { background: #28a745; height: 100%; transition: width 0.5s; }
+        .urgent { background: #ffe5e5; padding: 15px; border-radius: 5px; margin: 20px 0; color: #dc3545; }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <div class="progress-bar" role="navigation" aria-label="Analysis Steps">
-            <div class="progress-step">
-                <div class="step-circle active" id="step1" aria-current="step">1</div>
-                <div class="step-label">Verify Website</div>
-            </div>
-            <div class="progress-step">
-                <div class="step-circle" id="step2">2</div>
-                <div class="step-label">Choose Plan</div>
-            </div>
-            <div class="progress-step">
-                <div class="step-circle" id="step3">3</div>
-                <div class="step-label">Get Results</div>
-            </div>
-            <div class="credits-indicator" id="creditsIndicator" aria-live="polite">Credits: 0*</div>
-        </div>
-
-        <!-- Step 1: Website Verification -->
-        <div class="card section active" id="verificationSection" aria-live="polite">
-            <h2 class="section-title" role="heading" aria-level="2">We Need To Verify If Your Site Is Blocked Before You Can Proceed</h2>
-            <p class="section-subtitle">Some websites have anti-bot protection that prevents automated analysis. We'll check your site's accessibility first to ensure you get the best experience.</p>
-            
-            <div class="form-group">
-                <label class="form-label" for="websiteUrl">Enter Your Website URL</label>
-                <input type="url" class="form-input" id="websiteUrl" placeholder="https://example.com" required aria-required="true" aria-describedby="url-help">
-                <small id="url-help" class="form-help">Include http:// or https:// for best results.</small>
-            </div>
-            
-            <button class="btn btn-primary" onclick="checkWebsite()" aria-label="Check Website Compatibility">Check Website Compatibility</button>
-            
-            <div class="loading hidden" id="checkingLoading" aria-live="assertive">
-                <p>Checking website accessibility...</p>
-            </div>
-        </div>
-
-        <!-- Step 2a: Accessible Site -->
-        <div class="card section" id="accessibleSection" aria-live="polite">
-            <div class="success-message" role="alert">
-                <div class="success-icon">✅</div>
-                <h3>Great! Your Website Can Be Analyzed</h3>
-                <p>Your site is accessible for instant automated analysis</p>
-            </div>
-            
-            <p style="text-align: center; margin-bottom: 30px;">You can proceed with instant analysis:</p>
-            
-            <div class="pricing-card">
-                <h3>Automated Analysis</h3>
-                <div class="price">$9.99</div>
-                <p class="price-description">Get 10 analysis credits for instant AEO scoring and recommendations</p>
-                <button class="btn btn-primary" onclick="purchaseCredits()" aria-label="Purchase Automated Analysis">Get Instant Analysis</button>
-            </div>
-        </div>
-
-        <!-- Step 2b: Blocked Site -->
-        <div class="card section" id="blockedSection" aria-live="polite">
-            <div class="blocked-card" role="alert">
-                <h3>This website uses advanced security that prevents automated analysis. Choose your preferred option:</h3>
-            </div>
-            
-            <div class="pricing-card">
-                <h3>Premium Manual Analysis</h3>
-                <div class="price">$49</div>
-                <p class="price-description">Expert analysis with detailed PDF report delivered via email within 15-20 minutes</p>
-                <button class="btn btn-primary" onclick="purchasePremium()" aria-label="Purchase Premium Analysis">Get Expert Analysis</button>
-            </div>
-            
-            <button class="btn btn-secondary" onclick="goBack()" aria-label="Try Different Website">Try Different Website</button>
-        </div>
-
-        <!-- Step 3b: Analysis Results -->
-        <div class="card section" id="resultsSection" aria-live="polite">
-            <div class="analyzed-domain" role="region" aria-label="Analyzed Website">
-                <div class="analyzed-domain-label">Website Analyzed</div>
-                <div class="analyzed-domain-value" id="analyzedDomain">--</div>
-            </div>
-            
-            <div class="score-display">
-                <div class="overall-score" id="overallScore">--</div>
-                <div class="score-label">Overall AEO Score</div>
-            </div>
-            
-            <div class="score-bar-container">
-                <div class="score-bar-title">AEO Score Comparison</div>
-                <div class="score-bar">
-                    <div class="score-marker user-score" id="userScoreMarker" style="left: 50%;">Your Score: --</div>
-                </div>
-                <div class="score-benchmarks">
-                    <div>Poor (0-40)</div>
-                    <div>Average: 52</div>
-                    <div>Top 10%: 85</div>
-                    <div>Excellent (71-100)</div>
-                </div>
-            </div>
-            
-            <div class="component-scores" role="region" aria-label="Component Scores">
-                <div class="component-score">
-                    <div class="component-score-value" id="contentScore">--</div>
-                    <div class="component-score-label">Content Structure</div>
-                </div>
-                <div class="component-score">
-                    <div class="component-score-value" id="technicalScore">--</div>
-                    <div class="component-score-label">Technical SEO</div>
-                </div>
-                <div class="component-score">
-                    <div class="component-score-value" id="uxScore">--</div>
-                    <div class="component-score-label">Authority & AI Signals</div>
-                </div>
-            </div>
-            
-            <div class="analysis-summary" role="alert">
-                <h3 id="analysisSummaryTitle">🚨 URGENT BUT ACHIEVABLE!</h3>
-                <p>Your website scored <span class="highlight" id="analysisScore">--/100</span>, which means you have <span class="highlight">CRITICAL OPPORTUNITY WINDOWS</span> that could skyrocket your AI search visibility by <span class="highlight">200-400%</span>!</p>
-                <p>The good news? These are <span class="highlight">simple fixes</span> that most competitors haven't discovered yet. Implement these recommendations this week and see results within 30 days.</p>
-            </div>
-            
-            <div class="recommendations" role="region" aria-label="Action Items">
-                <h3>Prioritized Action Items</h3>
-                <div id="recommendationsList">
-                    <!-- Recommendations populated by JS -->
-                </div>
-            </div>
-            
-            <div style="text-align: center; margin-top: 30px;">
-                <div class="credits-display" id="creditsDisplay">Credits Remaining: 9</div>
-                <button class="btn btn-secondary" onclick="analyzeAnother()" aria-label="Analyze Another Website">Analyze Another Website</button>
-            </div>
-        </div>
-
-        <!-- Out of Credits Section -->
-        <div class="card section" id="outOfCreditsSection" aria-live="polite">
-            <h2 class="section-title" role="heading" aria-level="2">🚨 You're Out of Analysis Credits!</h2>
-            <p class="section-subtitle">You've used all your analysis credits. Purchase another package to continue analyzing websites and growing your AI search visibility!</p>
-            
-            <div class="pricing-card">
-                <h3>Refill Credits</h3>
-                <div class="price">$9.99</div>
-                <p class="price-description">Get 10 more analysis credits</p>
-                <button class="btn btn-primary" onclick="purchaseMoreCredits()" aria-label="Buy More Credits">Buy More Credits</button>
-            </div>
-            
-            <div style="text-align: center; margin-top: 20px;">
-                <div class="credits-display credits-empty">Credits Remaining: 0</div>
-            </div>
-        </div>
-
-        <!-- Message Container -->
-        <div id="messageContainer" aria-live="assertive"></div>
+    <div class="credits">Credits: <span id="credits">0</span>*</div>
+    <h1>AEO Analyzer</h1>
+    
+    <div class="steps">
+        <div class="step" id="step1">1 Verify Website</div>
+        <div class="step" id="step2">2 Choose Plan</div>
+        <div class="step" id="step3">3 Get Results</div>
     </div>
 
-    <!-- JS enqueued separately via child theme -->
+    <div id="verifySection" class="section">
+        <h2>We Need To Verify If Your Site Is Blocked Before You Can Proceed</h2>
+        <p>Some websites have anti-bot protection that prevents automated analysis. We'll check your site's accessibility first to ensure you get the best experience.</p>
+        <label for="urlInput">Enter Your Website URL</label>
+        <input type="text" id="urlInput" placeholder="https://example.com" value="https://example.com">
+        <p class="warn">Include http:// or https:// for best results.</p>
+        <button onclick="checkCompatibility()">Check Website Compatibility</button>
+        <div id="loading" class="progress hidden">Checking website accessibility...</div>
+        <div id="verifyResult"></div>
+    </div>
+
+    <div id="planSection" class="section hidden">
+        <h2>Choose Your Analysis Option</h2>
+        <!-- Content will be populated based on verification -->
+    </div>
+
+    <div id="resultsSection" class="section hidden">
+        <h2>Website Analyzed: <span id="analyzedUrl"></span></h2>
+        <div class="score-bar"><div class="score-fill" id="scoreFill"></div></div>
+        <h3>Overall AEO Score: <span id="overallScore">--</span></h3>
+        <div class="section sticky">
+            <h3>AEO Score Comparison</h3>
+            <p>Your Score: <span id="yourScore">--</span></p>
+            <p>Poor (0-40) | Average: 52 | Top 10%: 85 | Excellent (71-100)</p>
+        </div>
+        <div class="section">
+            <h3>Content Structure</h3>
+            <p id="contentStructure">--</p>
+        </div>
+        <div class="section">
+            <h3>Technical SEO</h3>
+            <p id="technicalSEO">--</p>
+        </div>
+        <div class="section">
+            <h3>Authority & AI Signals</h3>
+            <p id="authorityAI">--</p>
+        </div>
+        <div class="urgent" id="urgentMessage">
+            <h3>🚨 URGENT BUT ACHIEVABLE!</h3>
+            <p>Your website scored --/100, which means you have CRITICAL OPPORTUNITY WINDOWS that could skyrocket your AI search visibility by 200-400%!</p>
+            <p>The good news? These are simple fixes that most competitors haven't discovered yet. Implement these recommendations this week and see results within 30 days.</p>
+        </div>
+        <h3>Prioritized Action Items</h3>
+        <ul id="actionItems">
+            <!-- Populated by JS -->
+        </ul>
+        <p>Credits Remaining: <span id="remainingCredits">9</span></p>
+        <button onclick="analyzeAnother()">Analyze Another Website</button>
+    </div>
+
+    <div id="noCreditsSection" class="section hidden">
+        <h2>🚨 You're Out of Analysis Credits!</h2>
+        <p>You've used all your analysis credits. Purchase another package to continue analyzing websites and growing your AI search visibility!</p>
+        <button onclick="refillCredits()">Refill Credits $9.99 (Get 10 more)</button>
+    </div>
+
+    <script>
+        let credits = 0; // Start with 0 for MVP
+        let currentUrl = '';
+        document.getElementById('credits').textContent = credits;
+        document.getElementById('step1').classList.add('active');
+
+        async function checkCompatibility() {
+            currentUrl = document.getElementById('urlInput').value.trim();
+            if (!currentUrl) return showError('verifyResult', 'Please enter a URL.');
+
+            if (!currentUrl.startsWith('http://') && !currentUrl.startsWith('https://')) currentUrl = 'https://' + currentUrl;
+
+            document.getElementById('loading').classList.remove('hidden');
+            const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(currentUrl);
+
+            try {
+                const response = await fetch(proxyUrl);
+                document.getElementById('loading').classList.add('hidden');
+
+                if (response.ok) {
+                    showSuccess('verifyResult', 'Great! Your Website Can Be Analyzed', 'Your site is accessible for instant automated analysis');
+                    document.getElementById('planSection').innerHTML = `
+                        <p>You can proceed with instant analysis:</p>
+                        <h3>Automated Analysis $9.99</h3>
+                        <p>Get 10 analysis credits for instant AEO scoring and recommendations</p>
+                        <button onclick="proceedToAnalysis(true)">Get Instant Analysis</button>
+                    `;
+                } else {
+                    showError('verifyResult', 'This website uses advanced security that prevents automated analysis.');
+                    document.getElementById('planSection').innerHTML = `
+                        <p>Choose your preferred option:</p>
+                        <h3>Premium Manual Analysis $49</h3>
+                        <p>Expert analysis with detailed PDF report delivered via email within 15-20 minutes</p>
+                        <button onclick="proceedToAnalysis(false)">Get Expert Analysis</button>
+                        <button onclick="tryDifferent()">Try Different Website</button>
+                    `;
+                }
+                document.getElementById('planSection').classList.remove('hidden');
+                document.getElementById('step2').classList.add('active');
+            } catch (error) {
+                document.getElementById('loading').classList.add('hidden');
+                showError('verifyResult', 'Error checking: ' + error.message);
+            }
+        }
+
+        function showSuccess(id, title, message) {
+            document.getElementById(id).innerHTML = `<p class="success">✅ ${title}</p><p>${message}</p>`;
+        }
+
+        function showError(id, message) {
+            document.getElementById(id).innerHTML = `<p class="error">${message}</p>`;
+        }
+
+        async function proceedToAnalysis(isAutomated) {
+            if (credits <= 0) {
+                document.getElementById('noCreditsSection').classList.remove('hidden');
+                return;
+            }
+
+            // Simulate payment/credit use for MVP
+            credits--;
+            document.getElementById('credits').textContent = credits;
+            document.getElementById('remainingCredits').textContent = credits;
+
+            // Fetch HTML for analysis
+            const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(currentUrl);
+            try {
+                const response = await fetch(proxyUrl);
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+
+                // Simulate AEO analysis (expand with more checks)
+                const score = Math.floor(Math.random() * 100) + 1; // Random for MVP
+                document.getElementById('analyzedUrl').textContent = currentUrl;
+                document.getElementById('overallScore').textContent = score;
+                document.getElementById('yourScore').textContent = score;
+                document.getElementById('scoreFill').style.width = `${score}%`;
+                document.getElementById('contentStructure').textContent = 'Analysis: ' + (doc.querySelectorAll('h1,h2,h3').length > 5 ? 'Good structure' : 'Needs more headings');
+                document.getElementById('technicalSEO').textContent = 'Meta tags: ' + (doc.querySelector('meta[name="description"]') ? 'Present' : 'Missing');
+                document.getElementById('authorityAI').textContent = 'Links: ' + doc.querySelectorAll('a').length + ' found';
+
+                const items = ['Optimize meta tags', 'Add alt texts to images', 'Improve text/HTML ratio'];
+                const ul = document.getElementById('actionItems');
+                ul.innerHTML = '';
+                items.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = item;
+                    ul.appendChild(li);
+                });
+
+                document.getElementById('urgentMessage').querySelector('p').textContent = `Your website scored ${score}/100, which means you have CRITICAL OPPORTUNITY WINDOWS that could skyrocket your AI search visibility by 200-400%!`;
+
+                document.getElementById('resultsSection').classList.remove('hidden');
+                document.getElementById('step3').classList.add('active');
+            } catch (error) {
+                showError('verifyResult', 'Analysis failed: ' + error.message);
+            }
+        }
+
+        function tryDifferent() {
+            document.getElementById('urlInput').value = '';
+            document.getElementById('planSection').classList.add('hidden');
+            document.getElementById('verifyResult').innerHTML = '';
+        }
+
+        function analyzeAnother() {
+            tryDifferent();
+            document.getElementById('resultsSection').classList.add('hidden');
+            document.getElementById('step2').classList.remove('active');
+            document.getElementById('step3').classList.remove('active');
+        }
+
+        function refillCredits() {
+            // Simulate refill for MVP
+            credits += 10;
+            document.getElementById('credits').textContent = credits;
+            document.getElementById('noCreditsSection').classList.add('hidden');
+            alert('Credits refilled! (Simulated for MVP)');
+        }
+    </script>
 </body>
 </html>
