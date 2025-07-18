@@ -26,7 +26,7 @@
         button:hover { background: #0056b3; }
         .success { color: #28a745; font-weight: bold; }
         .error { color: #dc3545; font-weight: bold; }
-        .warn { color: #ffc107; font-weight: bold; }
+        .warn { color: #ffc107; font-weight: bold; font-size: 0.6em; } /* Reduced by 40% assuming base 1em */
         .hidden { display: none; }
         .credits { position: absolute; top: 20px; right: 20px; font-weight: bold; font-family: 'Poppins', sans-serif; }
         .progress { text-align: center; margin: 10px 0; }
@@ -34,7 +34,12 @@
         .score-fill { background: transparent; height: 100%; transition: width 0.5s; }
         .average-tick { position: absolute; top: 0; bottom: 0; width: 2px; background: #333; left: 52%; }
         .average-label { position: absolute; top: 25px; left: 52%; transform: translateX(-50%); font-size: 12px; color: #333; }
-        .urgent { background: #ffe5e5; padding: 15px; border-radius: 5px; margin: 20px 0; color: #dc3545; font-family: 'Poppins', sans-serif; }
+        .summary { padding: 15px; border-radius: 5px; margin: 20px 0; font-family: 'Poppins', sans-serif; }
+        .summary.good { background: #e8f5e9; color: #28a745; }
+        .summary.ok { background: #fff3e0; color: #f57c00; }
+        .summary.bad { background: #ffe5e5; color: #dc3545; }
+        .action-group { margin-bottom: 15px; }
+        .action-group h4 { margin-bottom: 5px; }
         .faq { margin-top: 40px; }
         .faq details { margin-bottom: 10px; border-bottom: 1px solid #ddd; }
         .faq summary { cursor: pointer; font-weight: bold; font-family: 'Montserrat', sans-serif; }
@@ -71,7 +76,7 @@
     </div>
 
     <div id="verifySection" class="section">
-        <h2>We Need To Verify If Your Site Is Blocked Before You Can Proceed</h2>
+        <h2>Step 1 - We need to verify if your site is blocked with anti-bot blockers.</h2>
         <p>Some websites have anti-bot protection that prevents automated analysis. We'll check your site's accessibility first to ensure you get the best experience.</p>
         <label for="urlInput">Enter Your Website URL</label>
         <input type="text" id="urlInput" placeholder="https://example.com" value="https://example.com">
@@ -111,15 +116,14 @@
             <h3>Authority & AI Signals</h3>
             <p id="authorityAI">--</p>
         </div>
-        <div class="urgent" id="urgentMessage">
-            <h3>🚨 URGENT BUT ACHIEVABLE!</h3>
-            <p>Your website scored --/100, which means you have CRITICAL OPPORTUNITY WINDOWS that could skyrocket your AI search visibility by 200-400%!</p>
-            <p>The good news? These are simple fixes that most competitors haven't discovered yet. Implement these recommendations this week and see results within 30 days.</p>
+        <div class="summary" id="summaryMessage">
+            <h3 id="summaryTitle"></h3>
+            <p id="summaryText"></p>
         </div>
         <h3>Prioritized Action Items</h3>
-        <ul id="actionItems">
+        <div id="actionItems">
             <!-- Populated by JS -->
-        </ul>
+        </div>
         <p>Credits Remaining: <span id="remainingCredits">9</span></p>
         <button onclick="analyzeAnother()">Analyze Another Website</button>
         <div class="cta">
@@ -142,16 +146,16 @@
         </details>
         <details>
             <summary>How does the scoring work?</summary>
-            <p>We analyze content structure, technical SEO, and AI signals to give a score out of 100.</p>
+            <p>We've developed our "Super 7" scoring system to assess your sites strengths in seven categories: Content Structure, Crawlability, Schema, Authority, Semantic Relevance, Performance, and AI Model Signals. For your instant analysis we've distilled these into 3 focus areas: Content Structure, Technical SEO, and Authority & AI Signals.</p>
         </details>
         <details>
             <summary>Why do I need credits?</summary>
-            <p>Credits ensure fair usage; buy more for unlimited analyses.</p>
+            <p>We use a proprietary mix of tools and AI to assess websites AEO score. Every assessment uses valuable compute resources, so a purchased credit system allows us to do this, and gives you up to 10 assessments so you can compare your score to your competitors.</p>
         </details>
     </section>
 
     <footer>
-        <p>&copy; 2025 AEO Analyzer. All rights reserved.</p>
+        <p>© 2025 AEO Analyzer. All rights reserved.</p>
         <a href="#">Privacy Policy</a>
         <a href="#">Terms of Service</a>
         <a href="#">Contact Us</a>
@@ -241,16 +245,45 @@
                 document.getElementById('technicalSEO').textContent = 'Meta tags: ' + (doc.querySelector('meta[name="description"]') ? 'Present' : 'Missing');
                 document.getElementById('authorityAI').textContent = 'Links: ' + doc.querySelectorAll('a').length + ' found';
 
-                const items = ['Optimize meta tags', 'Add alt texts to images', 'Improve text/HTML ratio'];
-                const ul = document.getElementById('actionItems');
-                ul.innerHTML = '';
-                items.forEach(item => {
-                    const li = document.createElement('li');
-                    li.textContent = item;
-                    ul.appendChild(li);
-                });
+                // Dynamic summary based on score
+                const summaryDiv = document.getElementById('summaryMessage');
+                const summaryTitle = document.getElementById('summaryTitle');
+                const summaryText = document.getElementById('summaryText');
+                if (score >= 80) {
+                    summaryDiv.classList.add('good');
+                    summaryTitle.textContent = '🎉 Awesome Job!';
+                    summaryText.textContent = `Your website scored ${score}/100 – that's top-tier! Keep building on this strong foundation with a few tweaks to reach perfection and stay ahead of the curve.`;
+                } else if (score >= 50) {
+                    summaryDiv.classList.add('ok');
+                    summaryTitle.textContent = '👍 Solid Foundation!';
+                    summaryText.textContent = `Your website scored ${score}/100 – you're on the right track! With some targeted improvements, you can boost your AI search visibility significantly and outpace competitors.`;
+                } else {
+                    summaryDiv.classList.add('bad');
+                    summaryTitle.textContent = '💪 Let's Level Up!';
+                    summaryText.textContent = `Your website scored ${score}/100 – plenty of room to grow! These quick wins can transform your site and skyrocket your AI search presence in no time. You've got this!`;
+                }
 
-                document.getElementById('urgentMessage').querySelector('p').textContent = `Your website scored ${score}/100, which means you have CRITICAL OPPORTUNITY WINDOWS that could skyrocket your AI search visibility by 200-400%!`;
+                // Prioritized action items with color-coded urgency
+                const actionItemsDiv = document.getElementById('actionItems');
+                actionItemsDiv.innerHTML = '';
+                
+                // Red/Urgent: Fire Drill Fixes 🔥
+                const urgentGroup = document.createElement('div');
+                urgentGroup.classList.add('action-group');
+                urgentGroup.innerHTML = '<h4 style="color: #dc3545;">Fire Drill Fixes 🔥 (Tackle These First!)</h4><ul><li>Add missing meta descriptions to boost crawlability.</li><li>Fix broken links for better authority.</li></ul>';
+                actionItemsDiv.appendChild(urgentGroup);
+                
+                // Yellow/Important: Quick Wins 🚀
+                const importantGroup = document.createElement('div');
+                importantGroup.classList.add('action-group');
+                importantGroup.innerHTML = '<h4 style="color: #ffc107;">Quick Wins 🚀 (Easy Boosts Ahead!)</h4><ul><li>Optimize headings for stronger content structure.</li><li>Add alt text to images for semantic relevance.</li></ul>';
+                actionItemsDiv.appendChild(importantGroup);
+                
+                // Green/Less Urgent: Polish Points ✨
+                const polishGroup = document.createElement('div');
+                polishGroup.classList.add('action-group');
+                polishGroup.innerHTML = '<h4 style="color: #28a745;">Polish Points ✨ (Fine-Tune for Shine!)</h4><ul><li>Enhance schema markup for AI signals.</li><li>Improve page speed for performance gains.</li></ul>';
+                actionItemsDiv.appendChild(polishGroup);
 
                 document.getElementById('planSection').classList.add('hidden');
                 document.getElementById('resultsSection').classList.remove('hidden');
