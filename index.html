@@ -178,33 +178,38 @@
             if (!currentUrl.startsWith('http://') && !currentUrl.startsWith('https://')) currentUrl = 'https://' + currentUrl;
 
             document.getElementById('loading').classList.remove('hidden');
-            const proxyUrl = 'https://cors-anywhere.com/' + currentUrl;
+            const proxyUrl = 'https://everyorigin.jwvbremen.nl/get?url=' + encodeURIComponent(currentUrl);
 
             try {
                 const response = await fetch(proxyUrl);
                 document.getElementById('loading').classList.add('hidden');
 
                 if (response.ok) {
-                    showSuccess('verifyResult', 'Great! Your Website Can Be Analyzed', 'Your site is accessible for instant automated analysis');
-                    document.getElementById('planSection').innerHTML = `
-                        <p>You can proceed with instant analysis:</p>
-                        <h3>Automated Analysis $9.99</h3>
-                        <p>Get 10 analysis credits for instant AEO scoring and recommendations</p>
-                        <button onclick="proceedToAnalysis(true)">Get Instant Analysis</button>
-                    `;
+                    const data = await response.json();
+                    if (data.status.http_code === 200) {
+                        showSuccess('verifyResult', 'Great! Your Website Can Be Analyzed', 'Your site is accessible for instant automated analysis');
+                        document.getElementById('planSection').innerHTML = `
+                            <p>You can proceed with instant analysis:</p>
+                            <h3>Automated Analysis $9.99</h3>
+                            <p>Get 10 analysis credits for instant AEO scoring and recommendations</p>
+                            <button onclick="proceedToAnalysis(true)">Get Instant Analysis</button>
+                        `;
+                    } else {
+                        showError('verifyResult', 'This website uses advanced security that prevents automated analysis.');
+                        document.getElementById('planSection').innerHTML = `
+                            <p>Choose your preferred option:</p>
+                            <h3>Premium Manual Analysis $49</h3>
+                            <p>Expert analysis with detailed PDF report delivered via email within 15-20 minutes</p>
+                            <button onclick="proceedToAnalysis(false)">Get Expert Analysis</button>
+                            <button onclick="tryDifferent()">Try Different Website</button>
+                        `;
+                    }
+                    document.getElementById('verifySection').classList.add('hidden');
+                    document.getElementById('planSection').classList.remove('hidden');
+                    document.getElementById('step2').classList.add('active');
                 } else {
-                    showError('verifyResult', 'This website uses advanced security that prevents automated analysis.');
-                    document.getElementById('planSection').innerHTML = `
-                        <p>Choose your preferred option:</p>
-                        <h3>Premium Manual Analysis $49</h3>
-                        <p>Expert analysis with detailed PDF report delivered via email within 15-20 minutes</p>
-                        <button onclick="proceedToAnalysis(false)">Get Expert Analysis</button>
-                        <button onclick="tryDifferent()">Try Different Website</button>
-                    `;
+                    throw new Error('Proxy response not OK');
                 }
-                document.getElementById('verifySection').classList.add('hidden');
-                document.getElementById('planSection').classList.remove('hidden');
-                document.getElementById('step2').classList.add('active');
             } catch (error) {
                 document.getElementById('loading').classList.add('hidden');
                 showError('verifyResult', 'Error checking accessibility – assuming blocked: ' + error.message);
@@ -240,10 +245,12 @@
             document.getElementById('credits').textContent = credits;
             document.getElementById('remainingCredits').textContent = credits;
 
-            const proxyUrl = 'https://cors-anywhere.com/' + currentUrl;
+            const proxyUrl = 'https://everyorigin.jwvbremen.nl/get?url=' + encodeURIComponent(currentUrl);
+
             try {
                 const response = await fetch(proxyUrl);
-                const html = await response.text();
+                const data = await response.json();
+                const html = data.contents;
                 const parser = new DOMParser();
                 const doc = parser.parseFromString(html, 'text/html');
 
