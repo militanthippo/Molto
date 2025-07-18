@@ -17,7 +17,7 @@
         h1, h2, h3 { font-family: 'Montserrat', sans-serif; color: #007bff; }
         .steps { display: flex; justify-content: space-between; margin-bottom: 30px; }
         .step { flex: 1; text-align: center; padding: 10px; background: #e9ecef; border-radius: 5px; margin: 0 10px; font-family: 'Montserrat', sans-serif; }
-        .step.active { background: #007bff; color: white; }
+        .step.active { background: #007bff !important; color: white; }
         .section { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: relative; transition: transform 0.3s; }
         .section:hover { transform: translateY(-5px); }
         .sticky { position: sticky; top: 0; z-index: 10; background: #fff; border-bottom: 2px solid #007bff; }
@@ -178,7 +178,7 @@
             if (!currentUrl.startsWith('http://') && !currentUrl.startsWith('https://')) currentUrl = 'https://' + currentUrl;
 
             document.getElementById('loading').classList.remove('hidden');
-            const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(currentUrl);
+            const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(currentUrl);
 
             try {
                 const response = await fetch(proxyUrl);
@@ -229,7 +229,7 @@
             document.getElementById('credits').textContent = credits;
             document.getElementById('remainingCredits').textContent = credits;
 
-            const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(currentUrl);
+            const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(currentUrl);
             try {
                 const response = await fetch(proxyUrl);
                 const html = await response.text();
