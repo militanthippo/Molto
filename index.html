@@ -184,7 +184,7 @@
             if (!currentUrl.startsWith('http://') && !currentUrl.startsWith('https://')) currentUrl = 'https://' + currentUrl;
 
             document.getElementById('loading').classList.remove('hidden');
-            const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(currentUrl);
+            const proxyUrl = 'https://api.cors.lol/?url=' + encodeURIComponent(currentUrl);
 
             try {
                 const response = await fetch(proxyUrl);
@@ -246,7 +246,7 @@
             document.getElementById('credits').textContent = credits;
             document.getElementById('remainingCredits').textContent = credits;
 
-            const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(currentUrl);
+            const proxyUrl = 'https://api.cors.lol/?url=' + encodeURIComponent(currentUrl);
             try {
                 const response = await fetch(proxyUrl);
                 const html = await response.text();
