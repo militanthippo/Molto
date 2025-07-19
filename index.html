@@ -168,6 +168,7 @@
     </footer>
 
     <script>
+        console.log('Script loaded - starting definitions');
         let credits = 0; // Start with 0 for MVP
         let currentUrl = '';
         document.getElementById('credits').textContent = credits;
@@ -177,55 +178,59 @@
             document.getElementById('analyzer').scrollIntoView({ behavior: 'smooth' });
         }
 
-        async function checkCompatibility() {
+        function checkCompatibility() {
+            console.log('checkCompatibility called');
             currentUrl = document.getElementById('urlInput').value.trim();
-            if (!currentUrl) return showError('verifyResult', 'Please enter a URL.');
+            if (!currentUrl) {
+                showError('verifyResult', 'Please enter a URL.');
+                return;
+            }
 
             if (!currentUrl.startsWith('http://') && !currentUrl.startsWith('https://')) currentUrl = 'https://' + currentUrl;
 
             document.getElementById('loading').classList.remove('hidden');
             const proxyUrl = '/.netlify/functions/fetch-url?url=' + encodeURIComponent(currentUrl);
 
-            try {
-                const response = await fetch(proxyUrl);
-                document.getElementById('loading').classList.add('hidden');
-
-                if (response.ok) {
-                    showSuccess('verifyResult', 'Great! Your Website Can Be Analyzed', 'Your site is accessible for instant automated analysis');
+            fetch(proxyUrl)
+                .then(response => {
+                    document.getElementById('loading').classList.add('hidden');
+                    if (response.ok) {
+                        showSuccess('verifyResult', 'Great! Your Website Can Be Analyzed', 'Your site is accessible for instant automated analysis');
+                        document.getElementById('planSection').innerHTML = `
+                            <p>You can proceed with instant analysis:</p>
+                            <h3>Automated Analysis $9.99</h3>
+                            <p>Get 10 analysis credits for instant AEO scoring and recommendations</p>
+                            <button onclick="proceedToAnalysis(true)">Get Instant Analysis</button>
+                        `;
+                    } else {
+                        showError('verifyResult', 'This website uses advanced security that prevents automated analysis.');
+                        document.getElementById('planSection').innerHTML = `
+                            <p>Choose your preferred option:</p>
+                            <h3>Premium Manual Analysis $49</h3>
+                            <p>Expert analysis with detailed PDF report delivered via email within 15-20 minutes</p>
+                            <button onclick="proceedToAnalysis(false)">Get Expert Analysis</button>
+                            <button onclick="tryDifferent()">Try Different Website</button>
+                        `;
+                    }
+                    document.getElementById('verifySection').classList.add('hidden');
+                    document.getElementById('planSection').classList.remove('hidden');
+                    document.getElementById('step2').classList.add('active');
+                })
+                .catch(error => {
+                    document.getElementById('loading').classList.add('hidden');
+                    showError('verifyResult', 'Error checking accessibility – assuming blocked: ' + error.message);
+                    // Fallback to manual option on error
                     document.getElementById('planSection').innerHTML = `
-                        <p>You can proceed with instant analysis:</p>
-                        <h3>Automated Analysis $9.99</h3>
-                        <p>Get 10 analysis credits for instant AEO scoring and recommendations</p>
-                        <button onclick="proceedToAnalysis(true)">Get Instant Analysis</button>
-                    `;
-                } else {
-                    showError('verifyResult', 'This website uses advanced security that prevents automated analysis.');
-                    document.getElementById('planSection').innerHTML = `
-                        <p>Choose your preferred option:</p>
+                        <p>Unable to automatically check – choose manual analysis or try later:</p>
                         <h3>Premium Manual Analysis $49</h3>
                         <p>Expert analysis with detailed PDF report delivered via email within 15-20 minutes</p>
                         <button onclick="proceedToAnalysis(false)">Get Expert Analysis</button>
                         <button onclick="tryDifferent()">Try Different Website</button>
                     `;
-                }
-                document.getElementById('verifySection').classList.add('hidden');
-                document.getElementById('planSection').classList.remove('hidden');
-                document.getElementById('step2').classList.add('active');
-            } catch (error) {
-                document.getElementById('loading').classList.add('hidden');
-                showError('verifyResult', 'Error checking accessibility – assuming blocked: ' + error.message);
-                // Fallback to manual option on error
-                document.getElementById('planSection').innerHTML = `
-                    <p>Unable to automatically check – choose manual analysis or try later:</p>
-                    <h3>Premium Manual Analysis $49</h3>
-                    <p>Expert analysis with detailed PDF report delivered via email within 15-20 minutes</p>
-                    <button onclick="proceedToAnalysis(false)">Get Expert Analysis</button>
-                    <button onclick="tryDifferent()">Try Different Website</button>
-                `;
-                document.getElementById('verifySection').classList.add('hidden');
-                document.getElementById('planSection').classList.remove('hidden');
-                document.getElementById('step2').classList.add('active');
-            }
+                    document.getElementById('verifySection').classList.add('hidden');
+                    document.getElementById('planSection').classList.remove('hidden');
+                    document.getElementById('step2').classList.add('active');
+                });
         }
 
         function showSuccess(id, title, message) {
@@ -236,7 +241,8 @@
             document.getElementById(id).innerHTML = `<p class="error">${message}</p>`;
         }
 
-        async function proceedToAnalysis(isAutomated) {
+        function proceedToAnalysis(isAutomated) {
+            console.log('proceedToAnalysis called, isAutomated: ' + isAutomated);
             if (credits <= 0) {
                 document.getElementById('noCreditsSection').classList.remove('hidden');
                 return;
@@ -247,68 +253,70 @@
             document.getElementById('remainingCredits').textContent = credits;
 
             const proxyUrl = '/.netlify/functions/fetch-url?url=' + encodeURIComponent(currentUrl);
-            try {
-                const response = await fetch(proxyUrl);
-                const html = await response.text();
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
 
-                const score = Math.floor(Math.random() * 100) + 1;
-                document.getElementById('analyzedUrl').textContent = currentUrl;
-                document.getElementById('overallScore').textContent = score;
-                document.getElementById('yourScore').textContent = score;
-                document.getElementById('scoreFill').style.width = `${score}%`;
-                document.getElementById('contentStructure').textContent = 'Analysis: ' + (doc.querySelectorAll('h1,h2,h3').length > 5 ? 'Good structure' : 'Needs more headings');
-                document.getElementById('technicalSEO').textContent = 'Meta tags: ' + (doc.querySelector('meta[name="description"]') ? 'Present' : 'Missing');
-                document.getElementById('authorityAI').textContent = 'Links: ' + doc.querySelectorAll('a').length + ' found';
+            fetch(proxyUrl)
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
 
-                // Dynamic summary based on score
-                const summaryDiv = document.getElementById('summaryMessage');
-                summaryDiv.className = 'summary'; // Reset classes
-                const summaryTitle = document.getElementById('summaryTitle');
-                const summaryText = document.getElementById('summaryText');
-                if (score >= 80) {
-                    summaryDiv.classList.add('good');
-                    summaryTitle.textContent = '🎉 Awesome Job!';
-                    summaryText.textContent = `Your website scored ${score}/100 – that's top-tier! Keep building on this strong foundation with a few tweaks to reach perfection and stay ahead of the curve.`;
-                } else if (score >= 50) {
-                    summaryDiv.classList.add('ok');
-                    summaryTitle.textContent = '👍 Solid Foundation!';
-                    summaryText.textContent = `Your website scored ${score}/100 – you're on the right track! With some targeted improvements, you can boost your AI search visibility significantly and outpace competitors.`;
-                } else {
-                    summaryDiv.classList.add('bad');
-                    summaryTitle.textContent = '💪 Let's Level Up!';
-                    summaryText.textContent = `Your website scored ${score}/100 – plenty of room to grow! These quick wins can transform your site and skyrocket your AI search presence in no time. You've got this!`;
-                }
+                    const score = Math.floor(Math.random() * 100) + 1;
+                    document.getElementById('analyzedUrl').textContent = currentUrl;
+                    document.getElementById('overallScore').textContent = score;
+                    document.getElementById('yourScore').textContent = score;
+                    document.getElementById('scoreFill').style.width = `${score}%`;
+                    document.getElementById('contentStructure').textContent = 'Analysis: ' + (doc.querySelectorAll('h1,h2,h3').length > 5 ? 'Good structure' : 'Needs more headings');
+                    document.getElementById('technicalSEO').textContent = 'Meta tags: ' + (doc.querySelector('meta[name="description"]') ? 'Present' : 'Missing');
+                    document.getElementById('authorityAI').textContent = 'Links: ' + doc.querySelectorAll('a').length + ' found';
 
-                // Prioritized action items with color-coded urgency
-                const actionItemsDiv = document.getElementById('actionItems');
-                actionItemsDiv.innerHTML = '';
-                
-                // Red/Urgent: Fire Drill Fixes 🔥
-                const urgentGroup = document.createElement('div');
-                urgentGroup.classList.add('action-group');
-                urgentGroup.innerHTML = '<h4 style="color: #e17055;">Fire Drill Fixes 🔥 (Tackle These First!)</h4><ul><li>Add missing meta descriptions to boost crawlability.</li><li>Fix broken links for better authority.</li></ul>';
-                actionItemsDiv.appendChild(urgentGroup);
-                
-                // Yellow/Important: Quick Wins 🚀
-                const importantGroup = document.createElement('div');
-                importantGroup.classList.add('action-group');
-                importantGroup.innerHTML = '<h4 style="color: #fdcb6e;">Quick Wins 🚀 (Easy Boosts Ahead!)</h4><ul><li>Optimize headings for stronger content structure.</li><li>Add alt text to images for semantic relevance.</li></ul>';
-                actionItemsDiv.appendChild(importantGroup);
-                
-                // Green/Less Urgent: Polish Points ✨
-                const polishGroup = document.createElement('div');
-                polishGroup.classList.add('action-group');
-                polishGroup.innerHTML = '<h4 style="color: #00b894;">Polish Points ✨ (Fine-Tune for Shine!)</h4><ul><li>Enhance schema markup for AI signals.</li><li>Improve page speed for performance gains.</li></ul>';
-                actionItemsDiv.appendChild(polishGroup);
+                    // Dynamic summary based on score
+                    const summaryDiv = document.getElementById('summaryMessage');
+                    summaryDiv.className = 'summary'; // Reset classes
+                    const summaryTitle = document.getElementById('summaryTitle');
+                    const summaryText = document.getElementById('summaryText');
+                    if (score >= 80) {
+                        summaryDiv.classList.add('good');
+                        summaryTitle.textContent = '🎉 Awesome Job!';
+                        summaryText.textContent = `Your website scored ${score}/100 – that's top-tier! Keep building on this strong foundation with a few tweaks to reach perfection and stay ahead of the curve.`;
+                    } else if (score >= 50) {
+                        summaryDiv.classList.add('ok');
+                        summaryTitle.textContent = '👍 Solid Foundation!';
+                        summaryText.textContent = `Your website scored ${score}/100 – you're on the right track! With some targeted improvements, you can boost your AI search visibility significantly and outpace competitors.`;
+                    } else {
+                        summaryDiv.classList.add('bad');
+                        summaryTitle.textContent = '💪 Let's Level Up!';
+                        summaryText.textContent = `Your website scored ${score}/100 – plenty of room to grow! These quick wins can transform your site and skyrocket your AI search presence in no time. You've got this!`;
+                    }
 
-                document.getElementById('planSection').classList.add('hidden');
-                document.getElementById('resultsSection').classList.remove('hidden');
-                document.getElementById('step3').classList.add('active');
-            } catch (error) {
-                showError('verifyResult', 'Analysis failed: ' + error.message);
-            }
+                    // Prioritized action items with color-coded urgency
+                    const actionItemsDiv = document.getElementById('actionItems');
+                    actionItemsDiv.innerHTML = '';
+                    
+                    // Red/Urgent: Fire Drill Fixes 🔥
+                    const urgentGroup = document.createElement('div');
+                    urgentGroup.classList.add('action-group');
+                    urgentGroup.innerHTML = '<h4 style="color: #e17055;">Fire Drill Fixes 🔥 (Tackle These First!)</h4><ul><li>Add missing meta descriptions to boost crawlability.</li><li>Fix broken links for better authority.</li></ul>';
+                    actionItemsDiv.appendChild(urgentGroup);
+                    
+                    // Yellow/Important: Quick Wins 🚀
+                    const importantGroup = document.createElement('div');
+                    importantGroup.classList.add('action-group');
+                    importantGroup.innerHTML = '<h4 style="color: #fdcb6e;">Quick Wins 🚀 (Easy Boosts Ahead!)</h4><ul><li>Optimize headings for stronger content structure.</li><li>Add alt text to images for semantic relevance.</li></ul>';
+                    actionItemsDiv.appendChild(importantGroup);
+                    
+                    // Green/Less Urgent: Polish Points ✨
+                    const polishGroup = document.createElement('div');
+                    polishGroup.classList.add('action-group');
+                    polishGroup.innerHTML = '<h4 style="color: #00b894;">Polish Points ✨ (Fine-Tune for Shine!)</h4><ul><li>Enhance schema markup for AI signals.</li><li>Improve page speed for performance gains.</li></ul>';
+                    actionItemsDiv.appendChild(polishGroup);
+
+                    document.getElementById('planSection').classList.add('hidden');
+                    document.getElementById('resultsSection').classList.remove('hidden');
+                    document.getElementById('step3').classList.add('active');
+                })
+                .catch(error => {
+                    showError('verifyResult', 'Analysis failed: ' + error.message);
+                });
         }
 
         function tryDifferent() {
@@ -339,6 +347,7 @@
         function upgradePro() {
             alert('Upgrade to Pro coming soon! (MVP simulation)');
         }
+        console.log('All functions defined - script end');
     </script>
 </body>
 </html>
