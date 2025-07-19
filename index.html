@@ -69,7 +69,7 @@
     <section class="hero">
         <h1>Unlock Your AI Search Potential</h1>
         <p>Get your AEO Score in minutes and dominate rankings with actionable insights.</p>
-        <button onclick="scrollToAnalyzer()">Start Free Analysis</button>
+        <button id="startAnalysisBtn">Start Free Analysis</button>
     </section>
 
     <div class="credits">Credits: <span id="credits">0</span>*</div>
@@ -87,14 +87,14 @@
         <label for="urlInput">Enter Your Website URL</label>
         <input type="text" id="urlInput" placeholder="https://example.com" value="https://example.com">
         <p class="warn">Include http:// or https:// for best results.</p>
-        <button onclick="checkCompatibility()">Check Website Compatibility</button>
+        <button id="checkCompatibilityBtn">Check Website Compatibility</button>
         <div id="loading" class="progress hidden">Checking website accessibility...</div>
         <div id="verifyResult"></div>
     </div>
 
     <div id="planSection" class="section hidden">
         <h2>Choose Your Analysis Option</h2>
-        <!-- Content will be populated based on verification -->
+        <div id="planContent"></div>
     </div>
 
     <div id="resultsSection" class="section hidden">
@@ -131,17 +131,17 @@
             <!-- Populated by JS -->
         </div>
         <p>Credits Remaining: <span id="remainingCredits">9</span></p>
-        <button onclick="analyzeAnother()">Analyze Another Website</button>
+        <button id="analyzeAnotherBtn">Analyze Another Website</button>
         <div class="cta">
-            <button onclick="shareResults()">Share Your Results</button>
-            <button onclick="upgradePro()">Upgrade to Pro for Unlimited</button>
+            <button id="shareResultsBtn">Share Your Results</button>
+            <button id="upgradeProBtn">Upgrade to Pro for Unlimited</button>
         </div>
     </div>
 
     <div id="noCreditsSection" class="section hidden">
         <h2>🚨 You're Out of Analysis Credits!</h2>
         <p>You've used all your analysis credits. Purchase another package to continue analyzing websites and growing your AI search visibility!</p>
-        <button onclick="refillCredits()">Refill Credits $9.99 (Get 10 more)</button>
+        <button id="refillCreditsBtn">Refill Credits $9.99 (Get 10 more)</button>
     </div>
 
     <section class="faq">
@@ -196,21 +196,24 @@
                     document.getElementById('loading').classList.add('hidden');
                     if (response.ok) {
                         showSuccess('verifyResult', 'Great! Your Website Can Be Analyzed', 'Your site is accessible for instant automated analysis');
-                        document.getElementById('planSection').innerHTML = `
+                        document.getElementById('planContent').innerHTML = `
                             <p>You can proceed with instant analysis:</p>
                             <h3>Automated Analysis $9.99</h3>
                             <p>Get 10 analysis credits for instant AEO scoring and recommendations</p>
-                            <button onclick="proceedToAnalysis(true)">Get Instant Analysis</button>
+                            <button id="instantAnalysisBtn">Get Instant Analysis</button>
                         `;
+                        document.getElementById('instantAnalysisBtn').addEventListener('click', () => proceedToAnalysis(true));
                     } else {
                         showError('verifyResult', 'This website uses advanced security that prevents automated analysis.');
-                        document.getElementById('planSection').innerHTML = `
+                        document.getElementById('planContent').innerHTML = `
                             <p>Choose your preferred option:</p>
                             <h3>Premium Manual Analysis $49</h3>
                             <p>Expert analysis with detailed PDF report delivered via email within 15-20 minutes</p>
-                            <button onclick="proceedToAnalysis(false)">Get Expert Analysis</button>
-                            <button onclick="tryDifferent()">Try Different Website</button>
+                            <button id="expertAnalysisBtn">Get Expert Analysis</button>
+                            <button id="tryDifferentBtn">Try Different Website</button>
                         `;
+                        document.getElementById('expertAnalysisBtn').addEventListener('click', () => proceedToAnalysis(false));
+                        document.getElementById('tryDifferentBtn').addEventListener('click', tryDifferent);
                     }
                     document.getElementById('verifySection').classList.add('hidden');
                     document.getElementById('planSection').classList.remove('hidden');
@@ -220,13 +223,15 @@
                     document.getElementById('loading').classList.add('hidden');
                     showError('verifyResult', 'Error checking accessibility – assuming blocked: ' + error.message);
                     // Fallback to manual option on error
-                    document.getElementById('planSection').innerHTML = `
+                    document.getElementById('planContent').innerHTML = `
                         <p>Unable to automatically check – choose manual analysis or try later:</p>
                         <h3>Premium Manual Analysis $49</h3>
                         <p>Expert analysis with detailed PDF report delivered via email within 15-20 minutes</p>
-                        <button onclick="proceedToAnalysis(false)">Get Expert Analysis</button>
-                        <button onclick="tryDifferent()">Try Different Website</button>
+                        <button id="expertAnalysisBtn">Get Expert Analysis</button>
+                        <button id="tryDifferentBtn">Try Different Website</button>
                     `;
+                    document.getElementById('expertAnalysisBtn').addEventListener('click', () => proceedToAnalysis(false));
+                    document.getElementById('tryDifferentBtn').addEventListener('click', tryDifferent);
                     document.getElementById('verifySection').classList.add('hidden');
                     document.getElementById('planSection').classList.remove('hidden');
                     document.getElementById('step2').classList.add('active');
@@ -347,7 +352,17 @@
         function upgradePro() {
             alert('Upgrade to Pro coming soon! (MVP simulation)');
         }
-        console.log('All functions defined - script end');
+
+        // Add event listeners after DOM load
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('startAnalysisBtn').addEventListener('click', scrollToAnalyzer);
+            document.getElementById('checkCompatibilityBtn').addEventListener('click', checkCompatibility);
+            document.getElementById('analyzeAnotherBtn').addEventListener('click', analyzeAnother);
+            document.getElementById('refillCreditsBtn').addEventListener('click', refillCredits);
+            document.getElementById('shareResultsBtn').addEventListener('click', shareResults);
+            document.getElementById('upgradeProBtn').addEventListener('click', upgradePro);
+        });
+        console.log('All functions defined and event listeners set - script end');
     </script>
 </body>
 </html>
