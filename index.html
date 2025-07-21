@@ -202,7 +202,7 @@
                             <p>Get 10 analysis credits for instant AEO scoring and recommendations</p>
                             <button id="instantAnalysisBtn">Get Instant Analysis</button>
                         `;
-                        document.getElementById('instantAnalysisBtn').addEventListener('click', () => proceedToAnalysis(true));
+                        document.getElementById('instantAnalysisBtn').addEventListener('click', function() { proceedToAnalysis(true); });
                     } else {
                         showError('verifyResult', 'This website uses advanced security that prevents automated analysis.');
                         document.getElementById('planContent').innerHTML = `
@@ -212,7 +212,7 @@
                             <button id="expertAnalysisBtn">Get Expert Analysis</button>
                             <button id="tryDifferentBtn">Try Different Website</button>
                         `;
-                        document.getElementById('expertAnalysisBtn').addEventListener('click', () => proceedToAnalysis(false));
+                        document.getElementById('expertAnalysisBtn').addEventListener('click', function() { proceedToAnalysis(false); });
                         document.getElementById('tryDifferentBtn').addEventListener('click', tryDifferent);
                     }
                     document.getElementById('verifySection').classList.add('hidden');
@@ -221,16 +221,16 @@
                 })
                 .catch(error => {
                     document.getElementById('loading').classList.add('hidden');
-                    showError('verifyResult', 'Error checking accessibility – assuming blocked: ' + error.message);
+                    showError('verifyResult', 'Error checking accessibility - assuming blocked: ' + error.message);
                     // Fallback to manual option on error
                     document.getElementById('planContent').innerHTML = `
-                        <p>Unable to automatically check – choose manual analysis or try later:</p>
+                        <p>Unable to automatically check - choose manual analysis or try later:</p>
                         <h3>Premium Manual Analysis $49</h3>
                         <p>Expert analysis with detailed PDF report delivered via email within 15-20 minutes</p>
                         <button id="expertAnalysisBtn">Get Expert Analysis</button>
                         <button id="tryDifferentBtn">Try Different Website</button>
                     `;
-                    document.getElementById('expertAnalysisBtn').addEventListener('click', () => proceedToAnalysis(false));
+                    document.getElementById('expertAnalysisBtn').addEventListener('click', function() { proceedToAnalysis(false); });
                     document.getElementById('tryDifferentBtn').addEventListener('click', tryDifferent);
                     document.getElementById('verifySection').classList.add('hidden');
                     document.getElementById('planSection').classList.remove('hidden');
