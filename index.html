@@ -54,6 +54,9 @@
         .cta { text-align: center; margin: 25px 0; }
         .cta button { background: #00b894; margin: 0 10px; transition: background 0.3s; }
         .cta button:hover { background: #009d7b; }
+        .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
+        .metric-card { background: #1a1b1e; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .metric-card p { margin: 0; }
     </style>
 </head>
 <body>
@@ -105,6 +108,17 @@
         </div>
         <div class="average-label">Average Score (52)</div>
         <h3>Overall AEO Score: <span id="overallScore">--</span></h3>
+        <div class="metrics">
+            <div class="metric-card">
+                <p>LCP: <span id="lcpValue">-- ms</span></p>
+            </div>
+            <div class="metric-card">
+                <p>CLS: <span id="clsValue">--</span></p>
+            </div>
+            <div class="metric-card">
+                <p>INP: <span id="inpValue">-- ms</span></p>
+            </div>
+        </div>
         <div class="section sticky">
             <h3>AEO Score Comparison</h3>
             <p>Your Score: <span id="yourScore">--</span></p>
@@ -238,11 +252,11 @@
         }
 
         function showSuccess(id, title, message) {
-            document.getElementById(id).innerHTML = `<p class="success">✅ ${title}</p><p>${message}</p>`;
+            document.getElementById(id).innerHTML = '<p class="success">✅ ' + title + '</p><p>' + message + '</p>';
         }
 
         function showError(id, message) {
-            document.getElementById(id).innerHTML = `<p class="error">${message}</p>`;
+            document.getElementById(id).innerHTML = '<p class="error">' + message + '</p>';
         }
 
         function proceedToAnalysis(isAutomated) {
@@ -268,7 +282,7 @@
                     document.getElementById('analyzedUrl').textContent = currentUrl;
                     document.getElementById('overallScore').textContent = score;
                     document.getElementById('yourScore').textContent = score;
-                    document.getElementById('scoreFill').style.width = `${score}%`;
+                    document.getElementById('scoreFill').style.width = score + '%';
                     document.getElementById('contentStructure').textContent = 'Analysis: ' + (doc.querySelectorAll('h1,h2,h3').length > 5 ? 'Good structure' : 'Needs more headings');
                     document.getElementById('technicalSEO').textContent = 'Meta tags: ' + (doc.querySelector('meta[name="description"]') ? 'Present' : 'Missing');
                     document.getElementById('authorityAI').textContent = 'Links: ' + doc.querySelectorAll('a').length + ' found';
