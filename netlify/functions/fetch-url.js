@@ -1,5 +1,5 @@
-const { getLighthouse } = await import('lighthouse');
-const chromium = await import('@sparticuz/chromium');
+const { launch } = require('chrome-aws-lambda');
+const lighthouse = require('lighthouse');
 
 exports.handler = async (event) => {
     const url = event.queryStringParameters.url;
@@ -7,27 +7,22 @@ exports.handler = async (event) => {
         return { statusCode: 400, body: JSON.stringify({ error: 'No URL provided' }) };
     }
     try {
-        const chrome = await chromium.puppeteer.launch({
-            args: chromium.args,
-            defaultViewport: chromium.defaultViewport,
-            executablePath: await chromium.executablePath,
-            headless: chromium.headless,
-            ignoreHTTPSErrors: true,
+        const browser = await launch({
+            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+            headless: true,
         });
-        const lighthouse = await getLighthouse();
         const options = {
-            logLevel: 'error', // Reduce logs to minimize overhead
+            logLevel: 'error',
             onlyCategories: ['performance'],
-            port: chrome.port,
-            disableStorageReset: true, // Skip storage reset for speed
-            output: 'json', // No HTML report
+            port: (new URL(browser.wsEndpoint())).port,
+            output: 'json',
         };
-        const runnerResult = await lighthouse(url, options, null, chrome);
-        await chrome.close();
+        const { lhr } = await lighthouse(url, options, null);
+        await browser.close();
 
-        const lcp = runnerResult.lhr.audits['largest-contentful-paint']?.numericValue || 0;
-        const cls = runnerResult.lhr.audits['cumulative-layout-shift']?.numericValue || 0;
-        const inp = runnerResult.lhr.audits['interaction-to-next-paint']?.numericValue || 0;
+        const lcp = lhr.audits['largest-contentful-paint']?.numericValue || 0;
+        const cls = lhr.audits['cumulative-layout-shift']?.numericValue || 0;
+        const inp = lhr.audits['interaction-to-next-paint']?.numericValue || 0;
 
         const score = Math.max(0, 100 - (lcp / 100 + cls * 100 + inp / 10));
 
@@ -45,7 +40,7 @@ exports.handler = async (event) => {
         return {
             statusCode: 200,
             body: JSON.stringify({
-                score: 50, // Default fallback score
+                score: 50,
                 lcp: 0,
                 cls: 0,
                 inp: 0,
