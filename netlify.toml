@@ -1,3 +1,6 @@
+[build]
+  publish = "public"  # Optional, assumes a public dir if you have one
+
 [functions]
   directory = "netlify/functions"
-  timeout = 30
+  timeout = 10  # Adjusted to free tier max
