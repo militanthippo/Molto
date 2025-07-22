@@ -1,7 +1,7 @@
-const lighthouse = require('lighthouse');
-const chromium = require('@sparticuz/chromium');
-
 exports.handler = async (event) => {
+    const lighthouse = (await import('lighthouse')).default;
+    const chromium = await import('@sparticuz/chromium');
+
     const url = event.queryStringParameters.url;
     if (!url) {
         return { statusCode: 400, body: 'No URL provided' };
