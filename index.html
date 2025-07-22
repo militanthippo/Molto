@@ -54,9 +54,8 @@
         .cta { text-align: center; margin: 25px 0; }
         .cta button { background: #00b894; margin: 0 10px; transition: background 0.3s; }
         .cta button:hover { background: #009d7b; }
-        .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
-        .metric-card { background: #1a1b1e; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .metric-card p { margin: 0; }
+        .metrics { display: flex; justify-content: space-between; margin: 15px 0; }
+        .metrics p { margin: 0 10px; }
     </style>
 </head>
 <body>
@@ -109,15 +108,9 @@
         <div class="average-label">Average Score (52)</div>
         <h3>Overall AEO Score: <span id="overallScore">--</span></h3>
         <div class="metrics">
-            <div class="metric-card">
-                <p>LCP: <span id="lcpValue">-- ms</span></p>
-            </div>
-            <div class="metric-card">
-                <p>CLS: <span id="clsValue">--</span></p>
-            </div>
-            <div class="metric-card">
-                <p>INP: <span id="inpValue">-- ms</span></p>
-            </div>
+            <p>LCP: <span id="lcpValue">-- ms</span></p>
+            <p>CLS: <span id="clsValue">--</span></p>
+            <p>INP: <span id="inpValue">-- ms</span></p>
         </div>
         <div class="section sticky">
             <h3>AEO Score Comparison</h3>
