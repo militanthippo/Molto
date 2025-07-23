@@ -287,8 +287,8 @@
                     document.getElementById('clsValue').textContent = cls;
                     document.getElementById('inpValue').textContent = inp + (inp !== '--' ? ' ms' : '');
 
-                    // Basic HTML parsing fallback
-                    const html = '<html></html>'; // Simplified fallback since fetch-url no longer returns HTML
+                    // Basic HTML parsing if available (using fallback HTML if not)
+                    const html = data.html || '<html></html>'; // Fallback empty HTML
                     const parser = new DOMParser();
                     const doc = parser.parseFromString(html, 'text/html');
                     document.getElementById('contentStructure').textContent = 'Analysis: ' + (doc.querySelectorAll('h1,h2,h3').length > 5 ? 'Good structure' : 'Needs more headings');
