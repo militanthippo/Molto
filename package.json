@@ -1,8 +1,5 @@
 {
   "name": "molto-mvp",
   "version": "1.0.0",
-  "dependencies": {
-    "chrome-aws-lambda": "^10.1.0",
-    "lighthouse": "^12.0.0"
-  }
+  "dependencies": {}
 }
