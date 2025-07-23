@@ -56,6 +56,9 @@
         .cta button:hover { background: #009d7b; }
         .metrics { display: flex; justify-content: space-between; margin: 15px 0; }
         .metrics p { margin: 0 10px; }
+        .analysis-loading { text-align: center; margin: 20px 0; color: #4a90e2; font-size: 1.2em; }
+        .analysis-loading::after { content: '...'; animation: dots 1.5s steps(5, end) infinite; }
+        @keyframes dots { 0%, 20% { color: rgba(0,0,0,0); text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0); } 40% { color: #4a90e2; text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0); } 60% { text-shadow: .25em 0 0 #4a90e2, .5em 0 0 rgba(0,0,0,0); } 80%, 100% { text-shadow: .25em 0 0 #4a90e2, .5em 0 0 #4a90e2; } }
     </style>
 </head>
 <body>
@@ -100,6 +103,7 @@
     </div>
 
     <div id="resultsSection" class="section hidden">
+        <div class="analysis-loading hidden">Analyzing</div>
         <h2>Website Analyzed: <span id="analyzedUrl"></span></h2>
         <div class="score-container">
             <div class="score-fill" id="scoreFill"></div>
@@ -263,10 +267,16 @@
             document.getElementById('credits').textContent = credits;
             document.getElementById('remainingCredits').textContent = credits;
 
+            document.getElementById('resultsSection').classList.remove('hidden');
+            document.getElementById('planSection').classList.add('hidden');
+            document.getElementById('analysis-loading').classList.remove('hidden');
+            document.getElementById('step3').classList.add('active');
+
             const proxyUrl = '/.netlify/functions/fetch-url?url=' + encodeURIComponent(currentUrl);
 
             fetch(proxyUrl)
                 .then(response => {
+                    document.getElementById('analysis-loading').classList.add('hidden');
                     if (!response.ok) {
                         throw new Error('Network response was not ok: ' + response.statusText);
                     }
@@ -336,6 +346,7 @@
                 })
                 .catch(error => {
                     console.error('Fetch error:', error);
+                    document.getElementById('analysis-loading').classList.add('hidden');
                     showError('verifyResult', 'Analysis failed: ' + error.message);
                     credits++; // Refund credit on failure
                     document.getElementById('credits').textContent = credits;
