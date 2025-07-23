@@ -1,4 +1,3 @@
-<script>
 exports.handler = async (event) => {
     const url = event.queryStringParameters.url;
     if (!url) {
@@ -24,6 +23,7 @@ exports.handler = async (event) => {
         const cls = data.lighthouseResult?.audits['cumulative-layout-shift']?.numericValue || 0;
         const inp = data.lighthouseResult?.audits['interaction-to-next-paint']?.numericValue || 0;
         const score = (data.lighthouseResult?.categories?.performance?.score * 100) || 50;
+        // Fetch HTML for basic parsing
         const htmlResponse = await fetch(url);
         const html = await htmlResponse.text();
         return {
@@ -51,4 +51,3 @@ exports.handler = async (event) => {
         };
     }
 };
-</script>
