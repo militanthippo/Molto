@@ -2,7 +2,7 @@
   "name": "molto-mvp",
   "version": "1.0.0",
   "dependencies": {
-    "lighthouse": "^12.8.0",
-    "@sparticuz/chromium": "^137.0.1"
+    "chrome-aws-lambda": "^10.1.0",
+    "lighthouse": "^12.0.0"
   }
 }
