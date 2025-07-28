@@ -56,9 +56,6 @@
         .cta button:hover { background: #009d7b; }
         .metrics { display: flex; justify-content: space-between; margin: 15px 0; }
         .metrics p { margin: 0 10px; }
-        .analysis-loading { text-align: center; margin: 20px 0; color: #4a90e2; font-size: 1.2em; }
-        .analysis-loading::after { content: '...'; animation: dots 1.5s steps(5, end) infinite; }
-        @keyframes dots { 0%, 20% { color: rgba(0,0,0,0); text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0); } 40% { color: #4a90e2; text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0); } 60% { text-shadow: .25em 0 0 #4a90e2, .5em 0 0 rgba(0,0,0,0); } 80%, 100% { text-shadow: .25em 0 0 #4a90e2, .5em 0 0 #4a90e2; } }
     </style>
 </head>
 <body>
@@ -103,7 +100,6 @@
     </div>
 
     <div id="resultsSection" class="section hidden">
-        <div class="analysis-loading hidden">Analyzing</div>
         <h2>Website Analyzed: <span id="analyzedUrl"></span></h2>
         <div class="score-container">
             <div class="score-fill" id="scoreFill"></div>
@@ -172,7 +168,7 @@
     </section>
 
     <footer>
-        <p>© 2025 AEO Analyzer. All rights reserved. Molto Productions LLC</p>
+        <p>© 2025 AEO Analyzer. All rights reserved.</p>
         <a href="#">Privacy Policy</a>
         <a href="#">Terms of Service</a>
         <a href="#">Contact Us</a>
@@ -276,13 +272,13 @@
 
             fetch(proxyUrl)
                 .then(response => {
-                    document.getElementById('analysis-loading').classList.add('hidden');
                     if (!response.ok) {
                         throw new Error('Network response was not ok: ' + response.statusText);
                     }
                     return response.json();
                 })
                 .then(data => {
+                    document.getElementById('analysis-loading').classList.add('hidden');
                     const score = data.score || 50; // Fallback to default 50 if no score
                     const lcp = data.lcp !== undefined ? data.lcp.toFixed(0) : '--';
                     const cls = data.cls !== undefined ? data.cls.toFixed(3) : '--';
@@ -339,10 +335,6 @@
                     polishGroup.classList.add('action-group');
                     polishGroup.innerHTML = '<h4 style="color: #00b894;">Polish Points ✨</h4><ul><li>Enhance INP (' + inp + 'ms) if slow.</li><li>Boost page speed.</li></ul>';
                     actionItemsDiv.appendChild(polishGroup);
-
-                    document.getElementById('planSection').classList.add('hidden');
-                    document.getElementById('resultsSection').classList.remove('hidden');
-                    document.getElementById('step3').classList.add('active');
                 })
                 .catch(error => {
                     console.error('Fetch error:', error);
