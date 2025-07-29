@@ -275,7 +275,7 @@
             document.getElementById('planSection').classList.add('hidden');
             const loadingElement = document.getElementById('analysis-loading');
             if (loadingElement) {
-                loadingElement.classList.remove('hidden');
+                loadingElement.classList.add('active');
             } else {
                 console.error('Loading element not found');
             }
@@ -283,15 +283,16 @@
 
             const proxyUrl = '/.netlify/functions/fetch-url?url=' + encodeURIComponent(currentUrl);
 
-            fetch(proxyUrl)
+            fetch(proxyUrl, { timeout: 30000 }) // Increased timeout to 30s
                 .then(response => {
-                    if (loadingElement) loadingElement.classList.add('hidden');
+                    if (loadingElement) loadingElement.classList.remove('active');
                     if (!response.ok) {
                         throw new Error('Network response was not ok: ' + response.statusText);
                     }
                     return response.json();
                 })
                 .then(data => {
+                    if (loadingElement) loadingElement.classList.remove('active');
                     const score = data.score || 50; // Fallback to default 50 if no score
                     const lcp = data.lcp !== undefined ? data.lcp.toFixed(0) : '--';
                     const cls = data.cls !== undefined ? data.cls.toFixed(3) : '--';
@@ -351,7 +352,7 @@
                 })
                 .catch(error => {
                     console.error('Fetch error:', error);
-                    if (loadingElement) loadingElement.classList.add('hidden');
+                    if (loadingElement) loadingElement.classList.remove('active');
                     showError('verifyResult', 'Analysis failed: ' + error.message);
                     credits++; // Refund credit on failure
                     document.getElementById('credits').textContent = credits;
