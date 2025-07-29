@@ -56,7 +56,13 @@
         .cta button { background: #00b894; margin: 0 10px; transition: background 0.3s; }
         .cta button:hover { background: #009d7b; }
         .metrics { display: flex; justify-content: space-between; margin: 15px 0; }
-        .metrics p { margin: 0 12px; }
+        .metrics p { margin: 0 10px; }
+        .analysis-loading { text-align: center; margin: 20px 0; color: #4a90e2; font-size: 1.2em; display: none; }
+        .analysis-loading.active { display: block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #4a90e2; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; margin: 0 auto; }
+        #stripe-payment { display: none; margin: 20px 0; }
+        #stripe-payment.active { display: block; }
     </style>
 </head>
 <body>
@@ -186,6 +192,10 @@
         document.getElementById('credits').textContent = credits;
         document.getElementById('step1').classList.add('active');
 
+        // Stripe setup (replace with your publishable key)
+        const stripe = Stripe('pk_test_your_publishable_key_here');
+        const premiumPriceId = 'price_1YourPremiumPriceIdHere'; // Replace with your Stripe Price ID
+
         function scrollToAnalyzer() {
             document.getElementById('analyzer').scrollIntoView({ behavior: 'smooth' });
         }
@@ -224,7 +234,7 @@
                             <button id="premiumReportBtn">Get Premium Report</button>
                             <button id="tryDifferentBtn">Try Different Website</button>
                         `;
-                        document.getElementById('premiumReportBtn').addEventListener('click', () => proceedToAnalysis(false));
+                        document.getElementById('premiumReportBtn').addEventListener('click', handlePremiumReport);
                         document.getElementById('tryDifferentBtn').addEventListener('click', tryDifferent);
                     }
                     document.getElementById('verifySection').classList.add('hidden');
@@ -241,7 +251,7 @@
                         <button id="premiumReportBtn">Get Premium Report</button>
                         <button id="tryDifferentBtn">Try Different Website</button>
                     `;
-                    document.getElementById('premiumReportBtn').addEventListener('click', () => proceedToAnalysis(false));
+                    document.getElementById('premiumReportBtn').addEventListener('click', handlePremiumReport);
                     document.getElementById('tryDifferentBtn').addEventListener('click', tryDifferent);
                     document.getElementById('verifySection').classList.add('hidden');
                     document.getElementById('planSection').classList.remove('hidden');
@@ -257,10 +267,31 @@
             document.getElementById(id).innerHTML = '<p class="error">' + message + '</p>';
         }
 
+        function handlePremiumReport() {
+            console.log('handlePremiumReport called for:', currentUrl);
+            // Redirect to Stripe Checkout instead of proceeding to analysis
+            stripe.redirectToCheckout({
+                lineItems: [{ price: premiumPriceId, quantity: 1 }],
+                mode: 'payment',
+                successUrl: window.location.href + '?success=true',
+                cancelUrl: window.location.href + '?cancel=true',
+            }).then(function (result) {
+                if (result.error) {
+                    showError('verifyResult', 'Payment failed: ' + result.error.message);
+                }
+            });
+            // Do not deduct credits or proceed with analysis here
+        }
+
         function proceedToAnalysis(isAutomated) {
             console.log('proceedToAnalysis called, isAutomated: ' + isAutomated);
             if (credits <= 0) {
                 document.getElementById('noCreditsSection').classList.remove('hidden');
+                return;
+            }
+
+            if (!isAutomated) {
+                // For premium report, do not deduct credits or analyze; handled by handlePremiumReport
                 return;
             }
 
@@ -348,7 +379,7 @@
                 })
                 .catch(error => {
                     console.error('Fetch error:', error);
-                    if (loadingElement) loadingElement.classList.remove('active');
+                    if (loadingElement) loadingElement.classList.add('hidden');
                     showError('verifyResult', 'Analysis failed: ' + error.message);
                     credits++; // Refund credit on failure
                     document.getElementById('credits').textContent = credits;
