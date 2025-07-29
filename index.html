@@ -56,6 +56,10 @@
         .cta button:hover { background: #009d7b; }
         .metrics { display: flex; justify-content: space-between; margin: 15px 0; }
         .metrics p { margin: 0 10px; }
+        .analysis-loading { text-align: center; margin: 20px 0; color: #4a90e2; font-size: 1.2em; display: none; }
+        .analysis-loading.active { display: block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #4a90e2; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; margin: 0 auto; }
     </style>
 </head>
 <body>
@@ -100,7 +104,10 @@
     </div>
 
     <div id="resultsSection" class="section hidden">
-        <div class="analysis-loading hidden">Analyzing your site...</div>
+        <div id="analysis-loading" class="analysis-loading">
+            <div class="spinner"></div>
+            Analyzing your site...
+        </div>
         <h2>Website Analyzed: <span id="analyzedUrl"></span></h2>
         <div class="score-container">
             <div class="score-fill" id="scoreFill"></div>
@@ -266,20 +273,25 @@
 
             document.getElementById('resultsSection').classList.remove('hidden');
             document.getElementById('planSection').classList.add('hidden');
-            document.getElementById('analysis-loading').classList.remove('hidden');
+            const loadingElement = document.getElementById('analysis-loading');
+            if (loadingElement) {
+                loadingElement.classList.remove('hidden');
+            } else {
+                console.error('Loading element not found');
+            }
             document.getElementById('step3').classList.add('active');
 
             const proxyUrl = '/.netlify/functions/fetch-url?url=' + encodeURIComponent(currentUrl);
 
             fetch(proxyUrl)
                 .then(response => {
+                    if (loadingElement) loadingElement.classList.add('hidden');
                     if (!response.ok) {
                         throw new Error('Network response was not ok: ' + response.statusText);
                     }
                     return response.json();
                 })
                 .then(data => {
-                    document.getElementById('analysis-loading').classList.add('hidden');
                     const score = data.score || 50; // Fallback to default 50 if no score
                     const lcp = data.lcp !== undefined ? data.lcp.toFixed(0) : '--';
                     const cls = data.cls !== undefined ? data.cls.toFixed(3) : '--';
@@ -339,7 +351,7 @@
                 })
                 .catch(error => {
                     console.error('Fetch error:', error);
-                    document.getElementById('analysis-loading').classList.add('hidden');
+                    if (loadingElement) loadingElement.classList.add('hidden');
                     showError('verifyResult', 'Analysis failed: ' + error.message);
                     credits++; // Refund credit on failure
                     document.getElementById('credits').textContent = credits;
